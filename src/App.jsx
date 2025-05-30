@@ -32,7 +32,8 @@ function App() {
       answer: matchedQA.answer,
       source: matchedQA.source
     });
-    const fullAnswer = `${matchedQA.answer} (${matchedQA.source})`;
+
+    const fullAnswer = `பாபா சொல்கிறார்:  ${matchedQA.answer} (${matchedQA.source})`;
     speakTamil(fullAnswer);
     } else {
     setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை." });
@@ -44,7 +45,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>☀️ பிரம்மா குமாரிகள் கேள்வி-பதில்கள்</h1>
+      <h3>☀️ பிரம்மா குமாரிகள் கேள்வி-பதில்கள்</h3>
       <img 
         src="/images/baba.png" 
         alt="Shiva Baba" 
@@ -52,7 +53,7 @@ function App() {
         height={157}
         style={{ borderRadius: '10px', marginTop: '10px' }} 
       />
-      <p>உங்களின் ஆன்மீக சந்தேகங்களை தமிழில் எழுதுங்கள்:</p>
+      <p>உங்களின் ஆன்மீக சந்தேகங்களை கேளுங்கள் அல்லது தமிழில் எழுதுங்கள் :</p>
       <SearchBox 
         inputText={inputText} 
         setInputText={setInputText} 
