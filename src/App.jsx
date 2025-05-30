@@ -45,7 +45,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h3>☀️ பிரம்மா குமாரிகள் கேள்வி-பதில்கள்</h3>
+      <h3>☀️ ஞான ரோபோட்</h3>
       <img 
         src="/images/baba.png" 
         alt="Shiva Baba" 
