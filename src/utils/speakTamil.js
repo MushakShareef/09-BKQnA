@@ -1,12 +1,13 @@
 
 
-
-
-
-
+// ✅ utils/speakTamil.js
+const synth = window.speechSynthesis;
 
 export function speakTamil(text) {
-  const synth = window.speechSynthesis;
+  if (synth.speaking) {
+    synth.cancel(); // Stop any current speech before starting new
+  }
+
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'ta-IN';
 
@@ -27,9 +28,16 @@ export function speakTamil(text) {
   };
 
   if (synth.getVoices().length === 0) {
-    // Voices not loaded yet, wait
     synth.onvoiceschanged = loadVoicesAndSpeak;
   } else {
     loadVoicesAndSpeak();
+  }
+}
+
+// ✅ New function to stop speech
+export function stopTamilSpeech() {
+  if (synth.speaking) {
+    synth.cancel();
+    console.log("🛑 Tamil speech stopped");
   }
 }
