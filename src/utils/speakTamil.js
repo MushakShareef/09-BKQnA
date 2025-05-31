@@ -1,40 +1,47 @@
 
 
+
 // ✅ utils/speakTamil.js
 const synth = window.speechSynthesis;
 
 export function speakTamil(text) {
+  if (!text) return;
+
   if (synth.speaking) {
-    synth.cancel(); // Stop any current speech before starting new
+    synth.cancel();
   }
 
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'ta-IN';
+  const voices = synth.getVoices();
+  const tamilVoice = voices.find(
+    (v) => v.lang === 'ta-IN' || v.name.toLowerCase().includes('valluvar')
+  );
 
-  const loadVoicesAndSpeak = () => {
-    const voices = synth.getVoices();
-    const tamilVoice = voices.find(
-      (v) => v.lang === 'ta-IN' || v.name.toLowerCase().includes('valluvar')
-    );
+  const paragraphs = text.split('\n\n').filter(p => p.trim()); // ✨ split on double line breaks
 
+  const speakNext = (index) => {
+    if (index >= paragraphs.length) return;
+
+    const utter = new SpeechSynthesisUtterance(paragraphs[index].trim());
+    utter.lang = 'ta-IN';
     if (tamilVoice) {
       utter.voice = tamilVoice;
       console.log("🎤 Tamil voice used:", tamilVoice.name);
-    } else {
-      console.warn("⚠️ Tamil voice not found. Using default.");
     }
+
+    utter.onend = () => {
+      speakNext(index + 1);
+    };
 
     synth.speak(utter);
   };
 
-  if (synth.getVoices().length === 0) {
-    synth.onvoiceschanged = loadVoicesAndSpeak;
+  if (voices.length === 0) {
+    synth.onvoiceschanged = () => speakNext(0);
   } else {
-    loadVoicesAndSpeak();
+    speakNext(0);
   }
 }
 
-// ✅ New function to stop speech
 export function stopTamilSpeech() {
   if (synth.speaking) {
     synth.cancel();
