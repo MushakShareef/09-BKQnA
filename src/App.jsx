@@ -63,7 +63,7 @@ function App() {
     <div className="app-container">
       <VoiceRipple isSpeaking={isSpeaking} />
 
-      <h3>☀️ ஞான ரோபோட்</h3>
+      <h3> ஞானி </h3>
       <img src="/images/baba.png" alt="Shiva Baba" width={150} height={157} style={{ borderRadius: '10px', marginTop: '10px' }} />
       <p>உங்களின் ஆன்மீக சந்தேகங்களை கேளுங்கள் அல்லது தமிழில் எழுதுங்கள் :</p>
 
