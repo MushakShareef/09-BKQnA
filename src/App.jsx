@@ -7,8 +7,12 @@ import SearchBox from './components/SearchBox';
 import AnswerDisplay from './components/AnswerDisplay';
 import qaData from './qaData';
 import synonymMap from './utils/synonymMap';
-import { speakTamil, stopTamilSpeech, onSpeakStatusChange } from './utils/speakTamil';
+import { stopTamilSpeech } from './utils/speakTamil';
 import VoiceRipple from './components/VoiceRipple';
+import { playTamilAudio, onSpeakStatusChange } from './utils/playTamilAudio';
+import { speakWithFallback, onSpeakStatusChangeFallback, stopAllSpeaking } from './utils/speakWithFallback';
+
+
 
 function expandWithSynonyms(words) {
   const expanded = new Set();
@@ -52,18 +56,24 @@ function App() {
     }
 
     if (bestMatch && maxCommonWords > 0) {
-      setResult({ answer: bestMatch.answer, source: bestMatch.source });
-      speakTamil(`பாபா சொல்கிறார்:  ${bestMatch.answer} (${bestMatch.source})`);
+    setResult({ answer: bestMatch.answer, source: bestMatch.source });
+
+    const cleanQuestion = bestMatch.question.trim().replace(/[?？]/g, "");
+    const audioFileName = cleanQuestion.replace(/\s+/g, "_") + ".mp3";
+    
+    console.log("Speaking with fallback:", bestMatch.answer, audioFileName);
+    speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
     } else {
       setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை." });
     }
+
   }
 
   return (
     <div className="app-container">
       <VoiceRipple isSpeaking={isSpeaking} />
 
-      <h3> ஞானி </h3>
+      <h3> ❄️..ஞானி..❄️ </h3>
       <img src="/images/baba.png" alt="Shiva Baba" width={150} height={157} style={{ borderRadius: '10px', marginTop: '10px' }} />
       <p>உங்களின் ஆன்மீக சந்தேகங்களை கேளுங்கள் அல்லது தமிழில் எழுதுங்கள் :</p>
 
