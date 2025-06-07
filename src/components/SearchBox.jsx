@@ -1,7 +1,5 @@
 
 
-
-
 import React, { useState, useEffect } from 'react';
 import { listenTamil } from '../utils/listenTamil';
 import qaData from '../qaData';
@@ -26,17 +24,23 @@ function SearchBox({ inputText, setInputText, onSearch }) {
       return;
     }
 
-    const inputWords = expandWithSynonyms(inputText.toLowerCase().split(/\s+/));
+    const inputWords = expandWithSynonyms(inputText.split(/\s+/));
 
-    const matches = qaData
-      .filter(q => {
-        const questionWords = q.question.toLowerCase().split(/\s+/);
-        return questionWords.some(word => inputWords.includes(word));
-      })
-      .map(q => q.question)
-      .slice(0, 5); // Limit to 5
+    const scoredMatches = qaData.map(q => {
+      const questionWords = q.question.split(/\s+/);
+      const overlapCount = questionWords.filter(word =>
+            inputWords.some(input => word.includes(input))
+      ).length;
 
-    setSuggestions(matches);
+      return { question: q.question, score: overlapCount };
+    });
+
+    const sorted = scoredMatches
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    setSuggestions(sorted.map(item => item.question));
   }, [inputText]);
 
   const handleSuggestionClick = (text) => {
@@ -70,19 +74,50 @@ function SearchBox({ inputText, setInputText, onSearch }) {
           padding: 0,
           zIndex: 10
         }}>
-          {suggestions.map((s, i) => (
-            <li
-              key={i}
-              onClick={() => handleSuggestionClick(s)}
-              style={{
-                padding: '8px',
-                cursor: 'pointer',
-                borderBottom: i < suggestions.length - 1 ? '1px solid #eee' : 'none'
-              }}
-            >
-              {s}
-            </li>
-          ))}
+          {suggestions.map((s, i) => {
+  const inputWords = expandWithSynonyms(inputText.split(/\s+/));
+
+  // Split suggestion into words
+  const parts = s.split(/\s+/).map((word, index) => {
+    // Find matching part from inputWords
+    const match = inputWords.find(input => word.includes(input));
+    if (match) {
+      const before = word.slice(0, word.indexOf(match));
+      const after = word.slice(word.indexOf(match) + match.length);
+      return (
+        <span key={index} style={{ marginRight: '4px' }}>
+          {before}
+          <span style={{
+            backgroundColor: '#fff176',
+            fontWeight: 'bold',
+            borderRadius: '4px',
+            padding: '0 2px'
+          }}>
+            {match}
+          </span>
+          {after + ' '}
+        </span>
+      );
+    } else {
+      return <span key={index}>{word + ' '}</span>;
+    }
+  });
+
+  return (
+    <li
+      key={i}
+      onClick={() => handleSuggestionClick(s)}
+      style={{
+        padding: '8px',
+        cursor: 'pointer',
+        borderBottom: i < suggestions.length - 1 ? '1px solid #eee' : 'none'
+      }}
+    >
+      {parts}
+    </li>
+    );
+})}
+
         </ul>
       )}
     </div>
@@ -90,3 +125,5 @@ function SearchBox({ inputText, setInputText, onSearch }) {
 }
 
 export default SearchBox;
+
+
