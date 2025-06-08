@@ -1,4 +1,7 @@
 
+
+// ✅ speakWithFallback.js (Updated with voice load fix, proper stop, and overlapping fix)
+
 let isSpeakingCallback = null;
 let currentAudio = null;
 let currentUtterance = null;
@@ -21,25 +24,39 @@ function isManualStopError(error) {
   return (
     MANUAL_STOP_FLAG ||
     error.message === 'MANUAL_STOP' ||
-    error.message.includes('interrupted')
+    (error.message && error.message.includes('interrupted'))
   );
+}
+
+// ✅ Ensure voices are loaded before using them
+function loadVoicesAsync() {
+  return new Promise((resolve) => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      resolve(voices);
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        resolve(window.speechSynthesis.getVoices());
+      };
+    }
+  });
 }
 
 export async function speakWithFallback(text, audioFileName) {
   if (!text) return;
 
+  stopAllSpeaking(); // ✅ stop previous speech or audio before starting
   MANUAL_STOP_FLAG = false;
   console.log('🎤 Starting new speech operation');
 
   // ✅ TTS using Web Speech API
-  function speakTTS() {
-    return new Promise((resolve, reject) => {
-      if (MANUAL_STOP_FLAG) return reject(new Error('MANUAL_STOP'));
-
+  async function speakTTS() {
+    return new Promise(async (resolve, reject) => {
       const synth = window.speechSynthesis;
       if (!synth) return reject(new Error('SpeechSynthesis not supported'));
 
-      const voices = synth.getVoices();
+      const voices = await loadVoicesAsync(); // ✅ fix: wait until voices are available
+
       const tamilVoice = voices.find(
         (v) =>
           v.lang === 'ta-IN' ||
@@ -83,7 +100,7 @@ export async function speakWithFallback(text, audioFileName) {
       };
 
       try {
-        synth.cancel(); // Stop any ongoing TTS
+        synth.cancel();
         if (!MANUAL_STOP_FLAG) {
           synth.speak(utter);
         } else {
@@ -112,20 +129,17 @@ export async function speakWithFallback(text, audioFileName) {
         updateSpeakingStatus(false);
       };
 
-      const onEnd = () => {
+      audio.onended = () => {
         console.log('✅ Audio ended');
         cleanup();
         resolve('SUCCESS');
       };
 
-      const onError = (e) => {
+      audio.onerror = (e) => {
         console.log('❌ Audio error:', e);
         cleanup();
         reject(new Error('Audio playback failed'));
       };
-
-      audio.onended = onEnd;
-      audio.onerror = onError;
 
       audio.onplay = () => {
         if (MANUAL_STOP_FLAG) {
@@ -139,7 +153,6 @@ export async function speakWithFallback(text, audioFileName) {
         updateSpeakingStatus(true);
       };
 
-      // Catch async start errors
       audio.play()
         .then(() => {
           if (MANUAL_STOP_FLAG) {

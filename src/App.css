@@ -18,7 +18,8 @@
 /* Mobile-First Text + Image */
 .app-container h3 {
   font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  /* margin-bottom: 0.5rem; */
+  
 }
 
 .app-container img {
