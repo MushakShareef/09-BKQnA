@@ -1,11 +1,11 @@
 
-
 let isSpeakingCallback = null;
 let currentAudio = null;
 let currentUtterance = null;
 
 let MANUAL_STOP_FLAG = false;
 
+// 🔔 Register callback to update UI on speaking status change
 export function onSpeakStatusChangeFallback(callback) {
   isSpeakingCallback = callback;
 }
@@ -16,7 +16,7 @@ function updateSpeakingStatus(isSpeaking) {
   }
 }
 
-// Helper to detect manual stop
+// ✅ Helper to detect stop errors
 function isManualStopError(error) {
   return (
     MANUAL_STOP_FLAG ||
@@ -31,19 +31,13 @@ export async function speakWithFallback(text, audioFileName) {
   MANUAL_STOP_FLAG = false;
   console.log('🎤 Starting new speech operation');
 
+  // ✅ TTS using Web Speech API
   function speakTTS() {
     return new Promise((resolve, reject) => {
-      if (MANUAL_STOP_FLAG) {
-        console.log('🛑 TTS cancelled - manual stop detected');
-        reject(new Error('MANUAL_STOP'));
-        return;
-      }
+      if (MANUAL_STOP_FLAG) return reject(new Error('MANUAL_STOP'));
 
       const synth = window.speechSynthesis;
-      if (!synth) {
-        reject(new Error('SpeechSynthesis not supported'));
-        return;
-      }
+      if (!synth) return reject(new Error('SpeechSynthesis not supported'));
 
       const voices = synth.getVoices();
       const tamilVoice = voices.find(
@@ -56,8 +50,7 @@ export async function speakWithFallback(text, audioFileName) {
 
       if (!tamilVoice) {
         console.log('❌ No Tamil voice found');
-        reject(new Error('No Tamil voice found'));
-        return;
+        return reject(new Error('No Tamil voice found'));
       }
 
       const utter = new SpeechSynthesisUtterance(text);
@@ -67,17 +60,15 @@ export async function speakWithFallback(text, audioFileName) {
 
       utter.onstart = () => {
         if (MANUAL_STOP_FLAG) {
-          console.log('🛑 TTS stopped at start');
           synth.cancel();
-          reject(new Error('MANUAL_STOP'));
-          return;
+          return reject(new Error('MANUAL_STOP'));
         }
         console.log('🎤 TTS started');
         updateSpeakingStatus(true);
       };
 
       utter.onend = () => {
-        console.log('✅ TTS completed naturally');
+        console.log('✅ TTS completed');
         currentUtterance = null;
         updateSpeakingStatus(false);
         resolve('SUCCESS');
@@ -87,18 +78,12 @@ export async function speakWithFallback(text, audioFileName) {
         console.log('❌ TTS error:', e.error);
         currentUtterance = null;
         updateSpeakingStatus(false);
-
-        if (MANUAL_STOP_FLAG || e.error === 'interrupted') {
-          console.log('🛑 TTS error due to manual stop or interruption');
-          reject(new Error('MANUAL_STOP'));
-        } else {
-          console.log('💥 TTS genuine error');
-          reject(new Error('TTS failed: ' + (e.error || 'Unknown error')));
-        }
+        if (isManualStopError(e)) return reject(new Error('MANUAL_STOP'));
+        reject(new Error('TTS failed: ' + (e.error || 'Unknown error')));
       };
 
       try {
-        synth.cancel(); // Clear any ongoing speech
+        synth.cancel(); // Stop any ongoing TTS
         if (!MANUAL_STOP_FLAG) {
           synth.speak(utter);
         } else {
@@ -111,84 +96,92 @@ export async function speakWithFallback(text, audioFileName) {
     });
   }
 
+  // ✅ Fallback: Play local audio file
   function playAudio() {
     return new Promise((resolve, reject) => {
       if (MANUAL_STOP_FLAG) {
-        console.log('🛑 Audio cancelled - manual stop detected');
-        reject(new Error('MANUAL_STOP'));
-        return;
+        console.log('🛑 Skipping audio - manually stopped before start');
+        return reject(new Error('MANUAL_STOP'));
       }
 
       const audio = new Audio(`/audio/${audioFileName}`);
       currentAudio = audio;
 
-      audio.onplay = () => {
-        if (MANUAL_STOP_FLAG) {
-          console.log('🛑 Audio stopped at play');
-          audio.pause();
-          reject(new Error('MANUAL_STOP'));
-          return;
-        }
-        console.log('🔊 Audio started playing');
-        updateSpeakingStatus(true);
-      };
-
-      audio.onended = () => {
-        console.log('✅ Audio completed naturally');
+      const cleanup = () => {
         currentAudio = null;
         updateSpeakingStatus(false);
+      };
+
+      const onEnd = () => {
+        console.log('✅ Audio ended');
+        cleanup();
         resolve('SUCCESS');
       };
 
-      audio.onerror = (e) => {
+      const onError = (e) => {
         console.log('❌ Audio error:', e);
-        currentAudio = null;
-        updateSpeakingStatus(false);
-        if (MANUAL_STOP_FLAG) {
-          console.log('🛑 Audio error due to manual stop');
-          reject(new Error('MANUAL_STOP'));
-        } else {
-          reject(new Error('Audio playback failed'));
-        }
+        cleanup();
+        reject(new Error('Audio playback failed'));
       };
 
-      audio.play().catch((playError) => {
-        currentAudio = null;
-        updateSpeakingStatus(false);
+      audio.onended = onEnd;
+      audio.onerror = onError;
+
+      audio.onplay = () => {
         if (MANUAL_STOP_FLAG) {
+          console.log('🛑 Audio stopped immediately');
+          audio.pause();
+          cleanup();
           reject(new Error('MANUAL_STOP'));
-        } else {
-          reject(playError);
+          return;
         }
-      });
+        console.log('🔊 Audio playing');
+        updateSpeakingStatus(true);
+      };
+
+      // Catch async start errors
+      audio.play()
+        .then(() => {
+          if (MANUAL_STOP_FLAG) {
+            console.log('🛑 Audio was flagged after play started');
+            audio.pause();
+            cleanup();
+            reject(new Error('MANUAL_STOP'));
+          }
+        })
+        .catch((err) => {
+          console.log('❌ Audio play error:', err);
+          cleanup();
+          reject(err);
+        });
     });
   }
 
-  // === MAIN EXECUTION ===
+  // 🔄 Main Logic
   try {
     console.log('🎯 Attempting TTS...');
     const ttsResult = await speakTTS();
 
     if (ttsResult === 'SUCCESS') {
-      console.log('✅ TTS completed successfully');
+      console.log('✅ TTS success');
       return;
     }
   } catch (ttsError) {
     if (isManualStopError(ttsError)) {
-      console.log('🛑 Manual stop detected after TTS - NO FALLBACK');
+      console.log('🛑 TTS manually stopped – no fallback');
       return;
     }
 
-    console.log('🔄 TTS failed unexpectedly, attempting audio fallback:', ttsError.message);
+    console.log('🔁 TTS failed, trying audio:', ttsError.message);
 
     try {
       const audioResult = await playAudio();
       if (audioResult === 'SUCCESS') {
-        console.log('✅ Audio fallback completed successfully');
+        console.log('✅ Audio fallback success');
       }
     } catch (audioError) {
       if (isManualStopError(audioError)) {
-        console.log('🛑 Manual stop detected during audio - NO ACTION');
+        console.log('🛑 Audio manually stopped – done');
         return;
       }
 
@@ -198,23 +191,24 @@ export async function speakWithFallback(text, audioFileName) {
   }
 }
 
+// ✅ Manual Stop (call this on Stop button)
 export function stopAllSpeaking() {
   console.log('🚨 === MANUAL STOP INITIATED ===');
   MANUAL_STOP_FLAG = true;
 
+  // Stop TTS
   if (window.speechSynthesis) {
-    console.log('🛑 Stopping TTS directly');
     window.speechSynthesis.cancel();
     currentUtterance = null;
   }
 
+  // Stop audio
   if (currentAudio) {
-    console.log('🛑 Stopping audio directly');
     currentAudio.pause();
     currentAudio.currentTime = 0;
     currentAudio = null;
   }
 
   updateSpeakingStatus(false);
-  console.log('✅ === ALL SPEAKING STOPPED MANUALLY ===');
+  console.log('✅ === ALL SPEAKING STOPPED ===');
 }

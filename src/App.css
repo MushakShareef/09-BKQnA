@@ -1,37 +1,203 @@
 
 
 
+/* App.css */
 
 .app-container {
-  position: relative;   /* added now*/
+  position: relative;
   font-family: 'Arial', sans-serif;
   text-align: center;
-  padding: 2rem;
+  padding: 1rem;
   background-color: #ffd60a;
   color: #333;
-  z-index: 0;  /* added now*/
+  z-index: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
+/* Mobile-First Text + Image */
+.app-container h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
 
+.app-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* Responsive Search Box */
 .search-box-container {
   display: flex;
-  flex-wrap: wrap;       /* wrap to next line if needed */
-  gap: 8px;              /* space between items */
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .search-box-container input {
-  flex: 1 1 200px;       /* input grows but has a min width */
+  flex: 1 1 200px;
   min-width: 150px;
   padding: 8px;
   font-size: 1rem;
   box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-.search-box-container button, 
+.search-box-container button,
 .search-box-container .mic-button {
   flex: 0 0 auto;
   padding: 8px 12px;
   font-size: 1rem;
   cursor: pointer;
+  border-radius: 6px;
+}
+
+/* Responsive stop button */
+.app-container button {
+  margin: 10px auto;
+  background-color: #ffdddd;
+  color: #a00;
+  border: 1px solid #a00;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+  max-width: 90%;
+}
+
+/* Media Query for Larger Screens */
+@media (min-width: 768px) {
+  .app-container {
+    padding: 2rem 3rem;
+  }
+
+  .app-container h3 {
+    font-size: 2rem;
+  }
+
+  .search-box-container input {
+    flex: 1 1 300px;
+  }
+}
+
+.baba-image {
+  width: 150px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* 🔲 Frame around the full app */
+.frame-container {
+  background: url('/images/gnani.png') no-repeat center center;
+  background-size: contain; /* ❗ keeps full image always visible */
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-repeat: no-repeat;
+}
+
+/* Inside frame */
+.app-container {
+  width: 100%;
+  max-width: 400px;
+  background: transparent;
+  padding: 1rem;
+  text-align: center;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+/* Image inside app */
+.baba-image {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* Button */
+.app-container button {
+  background-color: #ffdddd; /*ffdddd*/
+  color: #a00;
+  border: 1px solid #a00;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 10px auto;
+  max-width: 90%;
+  display: block;
+}
+
+/* Fullscreen frame layout using actual image */
+.frame-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+   background-color: #219ebc;
+}
+
+/* The frame background image */
+.frame-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: fill; /* ✅ Fill entire screen, no gap */
+  z-index: 0;
+}
+
+/* All content over the frame */
+.frame-content {
+  position: relative;
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+ 
+}
+
+/* Baba image */
+.baba-image {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* Button style */
+.frame-content button {
+  background-color: #ffdddd;  /*ffdddd*/
+  color: #a00;
+  border: 1px solid #a00;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 10px auto;
+  max-width: 90%;
+  display: block;
 }

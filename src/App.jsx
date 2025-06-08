@@ -70,28 +70,26 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+   <div className="frame-wrapper">
+    <img src="/images/gnani.png" alt="Gnani Frame" className="frame-background" />
+
+    <div className="frame-content">
       <VoiceRipple isSpeaking={isSpeaking} />
 
       <h3> ❄️..ஞானி..❄️ </h3>
-      <img src="/images/baba.png" alt="Shiva Baba" width={150} height={157} style={{ borderRadius: '10px', marginTop: '10px' }} />
+
+      <img src="/images/baba.png" alt="Shiva Baba" className="baba-image" />
+
       <p>உங்களின் ஆன்மீக சந்தேகங்களை கேளுங்கள் அல்லது தமிழில் எழுதுங்கள் :</p>
 
-      <button onClick={stopTamilSpeech} style={{
-        marginBottom: '10px',
-        backgroundColor: '#ffdddd',
-        color: '#a00',
-        border: '1px solid #a00',
-        padding: '6px 12px',
-        borderRadius: '8px',
-        cursor: 'pointer'
-      }}>
+      <button onClick={stopTamilSpeech}>
         🛑 பேசுவதை நிறுத்து (Stop Speaking)
       </button>
 
       <SearchBox inputText={inputText} setInputText={setInputText} onSearch={handleSearch} />
       <AnswerDisplay result={result} />
     </div>
+  </div>
   );
 }
 
