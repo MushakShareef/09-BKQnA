@@ -7,7 +7,6 @@ import SearchBox from './components/SearchBox';
 import AnswerDisplay from './components/AnswerDisplay';
 import qaData from './qaData';
 import synonymMap from './utils/synonymMap';
-import { stopTamilSpeech } from './utils/speakTamil';
 import VoiceRipple from './components/VoiceRipple';
 import { playTamilAudio, onSpeakStatusChange } from './utils/playTamilAudio';
 import { speakWithFallback, onSpeakStatusChangeFallback, stopAllSpeaking } from './utils/speakWithFallback';
@@ -82,7 +81,7 @@ function App() {
 
       <p>உங்களின் ஆன்மீக சந்தேகங்களை கேளுங்கள் அல்லது தமிழில் எழுதுங்கள் :</p>
 
-      <button onClick={stopTamilSpeech}>
+      <button onClick={stopAllSpeaking}>
         🛑 பேசுவதை நிறுத்து (Stop Speaking)
       </button>
 
