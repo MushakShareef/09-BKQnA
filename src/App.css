@@ -3,47 +3,14 @@
 
 
 .app-container {
-  position: relative;
+  position: relative;   /* added now*/
   font-family: 'Arial', sans-serif;
   text-align: center;
-  padding: 1rem;
-  background-color: #0a9396;  /* 0a9396*/
-  color: #001219;  /* 333*/
-  z-index: 0;
-  overflow: hidden;
-  max-width: 100vw;
+  padding: 2rem;
+  background-color: #ffd60a;
+  color: #333;
+  z-index: 0;  /* added now*/
 }
-
-/* ✅ Full-width frame with no left-right margin */
-.frame-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;              /* full width */
-  height: auto;
-  aspect-ratio: 3 / 4;       /* maintain original ratio */
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.95;
-}
-
-
-
-
-/* ✅ Optional: Make ripple adapt too if needed */
-.ripple-wrapper {
-  position: absolute;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50vw;
-  max-width: 300px;
-  height: auto;
-  pointer-events: none;
-  z-index: 0;
-}
-
-
 
 
 .search-box-container {
@@ -67,11 +34,4 @@
   padding: 8px 12px;
   font-size: 1rem;
   cursor: pointer;
-}
-
-.attractive-title {
-  font-weight: 900;
-  font-size: 1rem;
-  color: #03045e; /* purple-pink */
-  letter-spacing: 0.1em;
 }
