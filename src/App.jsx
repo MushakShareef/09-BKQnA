@@ -1,6 +1,6 @@
 
 
-// ✅ App.jsx (with BaapDhadha welcome screen)
+// ✅ App.jsx – with BaapDhadha intro (once per session)
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import SearchBox from './components/SearchBox';
@@ -12,7 +12,7 @@ import { playTamilAudio, onSpeakStatusChange } from './utils/playTamilAudio';
 import { speakWithFallback, onSpeakStatusChangeFallback, stopAllSpeaking } from './utils/speakWithFallback';
 import { speakTamil } from './utils/speakTamil';
 
-// 🔆 Expand synonyms
+// 🔍 Expand Tamil synonyms
 function expandWithSynonyms(words) {
   const expanded = new Set();
   words.forEach(word => {
@@ -23,22 +23,30 @@ function expandWithSynonyms(words) {
   return Array.from(expanded);
 }
 
-// 🎬 Intro Screen Component
+// 🎬 Intro Component
 function GnaniIntro({ onFinish }) {
   useEffect(() => {
     const greetings = [
-      "ஓம் சாந்தி. மஹான் ஆத்மா.",
-      "ஓம் சாந்தி. பூஜ்ய ஆத்மா.",
-      "ஓம் சாந்தி. பரிஷ்தா.",
-      "ஓம் சாந்தி. விக்னவிநாசக் ஆத்மா.",
-      "ஓம் சாந்தி. தேவ ஆத்மா."
+      "ஓஓம் சாந்தி. மஹான் ஆத்மா.",
+      "ஓஓம் சாந்தி. பரிஷ்தா.",
+      "ஓஓம் சாந்தி. பூஜ்ய ஆத்மா.",
+      "ஓஓம் சாந்தி. விக்னவிநாசக் ஆத்மா.",
+      "ஓஓம் சாந்தி. தேவ ஆத்மா."
     ];
 
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-    speakTamil(randomGreeting);
+
+    // 🕒 Delay to ensure browser allows speech
+    const handleFirstInteraction = () => {
+     speakTamil(randomGreeting);
+     window.removeEventListener('click', handleFirstInteraction);
+     };
+
+    window.addEventListener('click', handleFirstInteraction);
+
 
     const timer = setTimeout(() => {
-      onFinish(); // fade out after 5 seconds
+      onFinish(); // hide intro after 5s
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -57,25 +65,25 @@ function GnaniIntro({ onFinish }) {
   );
 }
 
-// 🌟 Main App
+// 🧠 Main App
 function App() {
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
 
-  // ✅ Handle first time check
+  // ✅ Show intro only once per session
   useEffect(() => {
-    const isFirstTime = !localStorage.getItem('gnaniIntroShown');
-    if (isFirstTime) {
+    const alreadyShown = sessionStorage.getItem('introShown');
+    if (!alreadyShown) {
       setShowIntro(true);
-      localStorage.setItem('gnaniIntroShown', 'yes');
+      sessionStorage.setItem('introShown', 'yes');
     }
 
     onSpeakStatusChange(setIsSpeaking);
   }, []);
 
-  // 🔎 Handle Q&A
+  // 🔎 Handle search
   function handleSearch() {
     const query = inputText.trim();
     if (!query) {
@@ -109,7 +117,7 @@ function App() {
     }
   }
 
-  // 🌄 Show welcome screen only once
+  // 🖼 Show intro once per session
   if (showIntro) {
     return <GnaniIntro onFinish={() => setShowIntro(false)} />;
   }
