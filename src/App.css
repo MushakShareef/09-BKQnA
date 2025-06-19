@@ -203,3 +203,10 @@
   max-width: 90%;
   display: block;
 }
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
