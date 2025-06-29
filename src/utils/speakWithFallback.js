@@ -3,6 +3,9 @@ let currentAudio = null;
 let currentUtterance = null;
 let MANUAL_STOP_FLAG = false;
 
+
+import { startTTSRecording } from './ttsRecorder';
+
 export function onSpeakStatusChangeFallback(callback) {
   isSpeakingCallback = callback;
 }
@@ -59,9 +62,7 @@ export async function speakWithFallback(text, audioFileName) {
           v.name.toLowerCase().includes('valluvar')
       );
 
-      if (!tamilVoice) {
-        return reject(new Error('No Tamil voice found'));
-      }
+      if (!tamilVoice) return reject(new Error('No Tamil voice found'));
 
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'ta-IN';
@@ -78,10 +79,10 @@ export async function speakWithFallback(text, audioFileName) {
       };
 
       utter.onend = () => {
-        console.log('✅ TTS completed');
-        currentUtterance = null;
-        updateSpeakingStatus(false);
-        resolve('SUCCESS');
+      console.log('✅ TTS completed');
+      currentUtterance = null;
+      updateSpeakingStatus(false);
+      resolve('SUCCESS'); // Tells speakWithFallback: “Done!”
       };
 
       utter.onerror = (e) => {
@@ -94,6 +95,7 @@ export async function speakWithFallback(text, audioFileName) {
 
       try {
         synth.cancel();
+        await startTTSRecording();
         if (!MANUAL_STOP_FLAG) {
           synth.speak(utter);
         } else {

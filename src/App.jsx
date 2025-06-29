@@ -1,5 +1,3 @@
-
-
 // ✅ App.jsx – with BaapDhadha intro (once per session)
 import React, { useEffect, useState } from 'react';
 import './App.css';
@@ -11,6 +9,7 @@ import VoiceRipple from './components/VoiceRipple';
 import { playTamilAudio, onSpeakStatusChange } from './utils/playTamilAudio';
 import { speakWithFallback, onSpeakStatusChangeFallback, stopAllSpeaking } from './utils/speakWithFallback';
 import { speakTamil } from './utils/speakTamil';
+import { startTTSRecording, stopTTSRecordingAndGetURL, getLastRecordedURL } from './utils/ttsRecorder';
 
 // 🔍 Expand Tamil synonyms
 function expandWithSynonyms(words) {
@@ -36,17 +35,15 @@ function GnaniIntro({ onFinish }) {
 
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
 
-    // 🕒 Delay to ensure browser allows speech
     const handleFirstInteraction = () => {
-     speakTamil(randomGreeting);
-     window.removeEventListener('click', handleFirstInteraction);
-     };
+      speakTamil(randomGreeting);
+      window.removeEventListener('click', handleFirstInteraction);
+    };
 
     window.addEventListener('click', handleFirstInteraction);
 
-
     const timer = setTimeout(() => {
-      onFinish(); // hide intro after 5s
+      onFinish();
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -71,8 +68,8 @@ function App() {
   const [result, setResult] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [voiceDownloadUrl, setVoiceDownloadUrl] = useState(null);
 
-  // ✅ Show intro only once per session
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('introShown');
     if (!alreadyShown) {
@@ -83,8 +80,7 @@ function App() {
     onSpeakStatusChange(setIsSpeaking);
   }, []);
 
-  // 🔎 Handle search
-  function handleSearch() {
+  async function handleSearch() {
     const query = inputText.trim();
     if (!query) {
       setResult({ message: "தயவுசெய்து ஒரு கேள்வியை உள்ளிடுங்கள்." });
@@ -107,17 +103,23 @@ function App() {
 
     if (bestMatch && maxCommonWords > 0) {
       setResult({ answer: bestMatch.answer, source: bestMatch.source });
-
       const cleanQuestion = bestMatch.question.trim().replace(/[?？]/g, "");
       const audioFileName = cleanQuestion.replace(/\s+/g, "_") + ".mp3";
 
-      speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
+      await startTTSRecording();
+
+      await speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
+
+      // const url = await stopTTSRecordingAndDownload();
+      const url = await stopTTSRecordingAndGetURL();
+      if (url) {
+        setVoiceDownloadUrl(url);
+      }
     } else {
       setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை." });
     }
   }
 
-  // 🖼 Show intro once per session
   if (showIntro) {
     return <GnaniIntro onFinish={() => setShowIntro(false)} />;
   }
@@ -139,7 +141,16 @@ function App() {
         </button>
 
         <SearchBox inputText={inputText} setInputText={setInputText} onSearch={handleSearch} />
-        <AnswerDisplay result={result} />
+        <AnswerDisplay result={result} questionText={inputText} voiceDownloadUrl={voiceDownloadUrl} />
+
+        {/* 🎧 Show download button after TTS is finished */}
+        {voiceDownloadUrl && (
+          <a href={voiceDownloadUrl} download="gnani_voice.webm">
+            <button style={{ marginTop: '10px' }}>
+              🎧 பதிவான குரல் (Download Spoken Voice)
+            </button>
+          </a>
+        )}
       </div>
     </div>
   );
