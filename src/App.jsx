@@ -61,6 +61,36 @@ function GnaniIntro({ onFinish }) {
     }} />
   );
 }
+ async function downloadTamilMP3FromServer(text) {
+  if (!text) return;
+
+  const encodedText = encodeURIComponent(text);
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/generate-voice/?text=${encodedText}`);
+
+    if (!response.ok) {
+      alert("Voice generation failed.");
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "gnani_voice.mp3";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    console.error("MP3 download failed:", err);
+    alert("Failed to download voice. Server may be down.");
+  }
+}
+
+
+
+
+
 
 // 🧠 Main App
 function App() {
@@ -118,8 +148,8 @@ function App() {
     } else {
       setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை." });
     }
-  }
 
+  }
   if (showIntro) {
     return <GnaniIntro onFinish={() => setShowIntro(false)} />;
   }
@@ -141,16 +171,12 @@ function App() {
         </button>
 
         <SearchBox inputText={inputText} setInputText={setInputText} onSearch={handleSearch} />
-        <AnswerDisplay result={result} questionText={inputText} voiceDownloadUrl={voiceDownloadUrl} />
+        <AnswerDisplay result={result} questionText={inputText} />
 
-        {/* 🎧 Show download button after TTS is finished */}
-        {voiceDownloadUrl && (
-          <a href={voiceDownloadUrl} download="gnani_voice.webm">
-            <button style={{ marginTop: '10px' }}>
-              🎧 பதிவான குரல் (Download Spoken Voice)
-            </button>
-          </a>
-        )}
+        <button style={{ marginTop: '10px' }} onClick={() => downloadTamilMP3FromServer(result?.answer)}>
+          🎧 MP3வாக பதிவிறக்கு
+        </button>
+        
       </div>
     </div>
   );
