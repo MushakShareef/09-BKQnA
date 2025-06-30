@@ -66,7 +66,7 @@ function GnaniIntro({ onFinish }) {
 
   const encodedText = encodeURIComponent(text);
   try {
-    const response = await fetch(`http://127.0.0.1:8000/generate-voice/?text=${encodedText}`);
+    const response = await fetch(`https://gnani-voice-server.onrender.com/generate-voice?text=${encodedText}`);
 
     if (!response.ok) {
       alert("Voice generation failed.");
@@ -140,7 +140,7 @@ function App() {
 
       await speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
 
-      // const url = await stopTTSRecordingAndDownload();
+      
       const url = await stopTTSRecordingAndGetURL();
       if (url) {
         setVoiceDownloadUrl(url);
