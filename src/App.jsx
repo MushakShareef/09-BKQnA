@@ -1,5 +1,6 @@
 // ✅ App.jsx – with BaapDhadha intro (once per session)
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 import SearchBox from './components/SearchBox';
 import AnswerDisplay from './components/AnswerDisplay';
