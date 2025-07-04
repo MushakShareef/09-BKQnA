@@ -116,8 +116,8 @@ function App() {
     useEffect(() => {
     if (videoFileName && videoRef.current) {
     setTimeout(() => {
-      videoRef.current.scrollIntoView({ behavior: 'smooth' });
-      // videoRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+     
+      videoRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     }, 100); // Slight delay to ensure DOM is ready
    }
