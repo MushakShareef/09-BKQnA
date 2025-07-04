@@ -113,15 +113,22 @@ function App() {
     onSpeakStatusChange(setIsSpeaking);
   }, []);
 
-    useEffect(() => {
-    if (videoFileName && videoRef.current) {
+   useEffect(() => {
+   if (videoFileName && videoRef.current) {
     setTimeout(() => {
-     
-      videoRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      videoRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
 
-    }, 100); // Slight delay to ensure DOM is ready
+      // After scroll, adjust position gently
+      setTimeout(() => {
+        window.scrollBy({ top: -80, behavior: 'smooth' }); // Adjust -80 or -100 as needed
+      }, 300);
+    }, 100);
    }
   }, [videoFileName]);
+
 
 
 
