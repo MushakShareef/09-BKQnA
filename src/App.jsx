@@ -62,6 +62,7 @@ function GnaniIntro({ onFinish }) {
   );
 }
  async function downloadTamilMP3FromServer(text) {
+   console.log("🔊 Download button clicked with text:", text); // 👈 Add this line
   if (!text) return;
 
   const encodedText = encodeURIComponent(text);
@@ -87,11 +88,6 @@ function GnaniIntro({ onFinish }) {
   }
 }
 
-
-
-
-
-
 // 🧠 Main App
 function App() {
   const [inputText, setInputText] = useState('');
@@ -99,6 +95,10 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [voiceDownloadUrl, setVoiceDownloadUrl] = useState(null);
+  const [mode, setMode] = useState("audio"); // 🔊 or 🎥
+  const [videoFileName, setVideoFileName] = useState(null); // 🎥 Video playback state
+
+
 
   useEffect(() => {
     const alreadyShown = sessionStorage.getItem('introShown');
@@ -136,15 +136,18 @@ function App() {
       const cleanQuestion = bestMatch.question.trim().replace(/[?？]/g, "");
       const audioFileName = cleanQuestion.replace(/\s+/g, "_") + ".mp3";
 
-      await startTTSRecording();
 
-      await speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
-
-      
-      const url = await stopTTSRecordingAndGetURL();
-      if (url) {
-        setVoiceDownloadUrl(url);
+      if (mode === "audio") {
+        await startTTSRecording();
+        await speakWithFallback(`பாபா சொல்கிறார்: ${bestMatch.answer} (${bestMatch.source})`, audioFileName);
+        const url = await stopTTSRecordingAndGetURL();
+        if (url) setVoiceDownloadUrl(url);
+      } else if (mode === "video") {
+        const videoFileName = cleanQuestion.replace(/\s+/g, "_");
+        setVideoFileName(videoFileName); // 🎥 Show matching video
       }
+
+
     } else {
       setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை." });
     }
@@ -170,8 +173,49 @@ function App() {
           🛑 பேசுவதை நிறுத்து (Stop Speaking)
         </button>
 
+          <div style={{ marginBottom: '10px' }}>
+            <button 
+                onClick={() => setMode("audio")} 
+                style={{ 
+                  marginRight: '10px', 
+                  backgroundColor: mode === "audio" ? "#8ef" : "#eee",
+                  border: 'none', padding: '8px 16px', borderRadius: '8px'
+                }}
+              >
+                🔊 ஆடியோ (Audio Mode)
+            </button>
+
+            <button 
+                onClick={() => setMode("video")} 
+                style={{ 
+                  backgroundColor: mode === "video" ? "#8f8" : "#eee",
+                  border: 'none', padding: '8px 16px', borderRadius: '8px'
+                }}
+              >
+                🎥 வீடியோ (Video Mode)
+            </button>
+        </div>
+
+
         <SearchBox inputText={inputText} setInputText={setInputText} onSearch={handleSearch} />
         <AnswerDisplay result={result} questionText={inputText} />
+
+        {videoFileName && (
+          <video
+            src={`/video/${encodeURIComponent(videoFileName)}.mp4`}
+            autoPlay
+            controls={false}
+            onEnded={() => setVideoFileName(null)}
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              borderRadius: '16px',
+              boxShadow: '0 0 20px rgba(255,255,255,0.4)',
+              marginTop: '10px'
+            }}
+          />
+        )}
+
 
         <button style={{ marginTop: '10px' }} onClick={() => downloadTamilMP3FromServer(result?.answer)}>
           🎧 MP3வாக பதிவிறக்கு
