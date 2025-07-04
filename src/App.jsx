@@ -149,7 +149,7 @@ function App() {
 
 
     } else {
-      setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை.." });
+      setResult({ message: "மன்னிக்கவும், பதில் காணவில்லை..." });
     }
 
   }
