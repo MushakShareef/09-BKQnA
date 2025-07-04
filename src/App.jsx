@@ -97,6 +97,8 @@ function App() {
   const [voiceDownloadUrl, setVoiceDownloadUrl] = useState(null);
   const [mode, setMode] = useState("audio"); // 🔊 or 🎥
   const [videoFileName, setVideoFileName] = useState(null); // 🎥 Video playback state
+  const videoRef = useRef(null);
+
 
 
 
@@ -109,6 +111,19 @@ function App() {
 
     onSpeakStatusChange(setIsSpeaking);
   }, []);
+
+    useEffect(() => {
+    if (videoFileName && videoRef.current) {
+    setTimeout(() => {
+      // videoRef.current.scrollIntoView({ behavior: 'smooth' });
+      videoRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    }, 100); // Slight delay to ensure DOM is ready
+   }
+  }, [videoFileName]);
+
+
+
 
   async function handleSearch() {
     const query = inputText.trim();
@@ -201,19 +216,21 @@ function App() {
         <AnswerDisplay result={result} questionText={inputText} />
 
         {videoFileName && (
-          <video
-            src={`/video/${encodeURIComponent(videoFileName)}.mp4`}
-            autoPlay
-            controls={false}
-            onEnded={() => setVideoFileName(null)}
-            style={{
-              width: '100%',
-              maxWidth: '480px',
-              borderRadius: '16px',
-              boxShadow: '0 0 20px rgba(255,255,255,0.4)',
-              marginTop: '10px'
-            }}
-          />
+          <div ref={videoRef}>
+            <video
+              src={`/video/${encodeURIComponent(videoFileName)}.mp4`}
+              autoPlay
+              controls={false}
+              onEnded={() => setVideoFileName(null)}
+              style={{
+                width: '100%',
+                maxWidth: '480px',
+                borderRadius: '16px',
+                boxShadow: '0 0 20px rgba(255,255,255,0.4)',
+                marginTop: '10px'
+              }}
+            />
+          </div>
         )}
 
 
